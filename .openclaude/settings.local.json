@@ -4,7 +4,22 @@
       "Bash(ls -lh *.pdf)",
       "Bash(git init:*)",
       "Bash(git remote:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git branch:*)",
+      "Bash(git push:*)",
+      "Bash(git config:*)",
+      "Bash(git reset:*)",
+      "Bash(git tag:*)",
+      "Bash(ls -la *.jpg *.jpeg *.png)",
+      "Bash(cd:*)",
+      "Bash(for file:*)",
+      "Bash(do)",
+      "Bash(sed -i 's/containerColor = Color\\\\.White/containerColor = CardBackgroundDark/g' \"$file\")",
+      "Bash(sed -i 's/colors = CardDefaults\\\\.cardColors\\(containerColor = Color\\\\.White\\)/colors = CardDefaults.cardColors\\(containerColor = CardBackgroundDark\\)/g' \"$file\")",
+      "Bash(done)",
+      "Bash(./gradlew assembleDebug)",
+      "Bash(./gradlew assembleDebug --refresh-dependencies)"
     ]
   }
 }

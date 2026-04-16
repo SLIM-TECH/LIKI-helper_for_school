@@ -56,7 +56,7 @@ fun BooksScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(BackgroundLight)
+            .background(BackgroundDark)
     ) {
         // Header
         AnimatedVisibility(
@@ -92,7 +92,7 @@ fun BooksScreen(
             ScrollableTabRow(
                 selectedTabIndex = subjects.indexOf(selectedSubject),
                 modifier = Modifier.fillMaxWidth(),
-                containerColor = Color.White,
+                containerColor = CardBackgroundDark,
                 edgePadding = 8.dp
             ) {
                 subjects.forEach { subject ->
@@ -183,7 +183,7 @@ fun AnimatedBookCard(book: Book, index: Int, onClick: () -> Unit) {
                 .aspectRatio(0.7f)
                 .clip(RoundedCornerShape(12.dp))
                 .clickable(onClick = onClick),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
+            colors = CardDefaults.cardColors(containerColor = CardBackgroundDark),
             elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
         ) {
             Column(

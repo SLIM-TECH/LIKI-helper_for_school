@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -18,7 +20,7 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         // Читаем API ключи из local.properties
-        val properties = java.util.Properties()
+        val properties = Properties()
         val localPropertiesFile = rootProject.file("local.properties")
         if (localPropertiesFile.exists()) {
             properties.load(localPropertiesFile.inputStream())
@@ -80,14 +82,8 @@ dependencies {
     // Coil for images
     implementation("io.coil-kt:coil-compose:2.5.0")
 
-    // PDF Viewer
-    implementation("com.github.barteksc:android-pdf-viewer:3.2.0-beta.1")
-
     // PDF Text Extraction
     implementation("com.tom-roush:pdfbox-android:2.0.27.0")
-
-    // PDF Rendering for thumbnails
-    implementation("com.github.mhiew:android-pdf-viewer:3.2.0-beta.1")
 
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")

@@ -41,7 +41,7 @@ fun BellTimerScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(BackgroundLight)
+            .background(BackgroundDark)
     ) {
         // Header
         Surface(
@@ -121,7 +121,7 @@ fun RestCard() {
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
+            colors = CardDefaults.cardColors(containerColor = CardBackgroundDark),
             elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
         ) {
             Column(
@@ -183,7 +183,7 @@ fun NoLessonsCard() {
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
+            colors = CardDefaults.cardColors(containerColor = CardBackgroundDark),
             elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
         ) {
             Column(

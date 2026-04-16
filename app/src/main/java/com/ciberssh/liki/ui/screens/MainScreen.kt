@@ -54,7 +54,7 @@ fun MainScreen() {
     Scaffold(
         bottomBar = {
             NavigationBar(
-                containerColor = Color.White,
+                containerColor = SurfaceDark,
                 tonalElevation = 8.dp
             ) {
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -182,7 +182,9 @@ fun MainScreen() {
                 BellTimerScreen()
             }
             composable(Screen.Books.route) {
-                BooksScreen()
+                BooksScreen(onBookClick = { book ->
+                    // TODO: Navigate to PDF viewer
+                })
             }
             composable(Screen.AI.route) {
                 AIScreen()

@@ -41,7 +41,7 @@ fun HomeworkScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(BackgroundLight)
+            .background(BackgroundDark)
     ) {
         // Header with animation
         AnimatedVisibility(
@@ -96,7 +96,7 @@ fun HomeworkScreen(
         ScrollableTabRow(
             selectedTabIndex = days.indexOf(selectedDay),
             modifier = Modifier.fillMaxWidth(),
-            containerColor = Color.White,
+            containerColor = SurfaceDark,
             edgePadding = 8.dp
         ) {
             days.forEach { day ->
@@ -221,7 +221,7 @@ fun AnimatedHomeworkCard(
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(12.dp)),
             colors = CardDefaults.cardColors(
-                containerColor = if (homework.isCompleted) SuccessGreen.copy(alpha = 0.1f) else Color.White
+                containerColor = if (homework.isCompleted) SuccessGreen.copy(alpha = 0.1f) else CardBackgroundDark
             ),
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
         ) {

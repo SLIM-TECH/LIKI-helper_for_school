@@ -36,7 +36,7 @@ fun AdminScheduleScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(BackgroundLight)
+            .background(BackgroundDark)
     ) {
         // Header
         Surface(
@@ -74,7 +74,7 @@ fun AdminScheduleScreen(
 
                 FloatingActionButton(
                     onClick = { showAddDialog = true },
-                    containerColor = Color.White,
+                    containerColor = CardBackgroundDark,
                     modifier = Modifier.size(48.dp)
                 ) {
                     Icon(
@@ -90,7 +90,7 @@ fun AdminScheduleScreen(
         ScrollableTabRow(
             selectedTabIndex = days.indexOf(selectedDay),
             modifier = Modifier.fillMaxWidth(),
-            containerColor = Color.White,
+            containerColor = CardBackgroundDark,
             edgePadding = 8.dp
         ) {
             days.forEach { day ->
@@ -166,7 +166,7 @@ fun AdminLessonCard(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp)),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = CardBackgroundDark),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Row(

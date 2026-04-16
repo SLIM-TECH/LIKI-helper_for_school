@@ -43,7 +43,7 @@ fun ScheduleScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(BackgroundLight)
+            .background(BackgroundDark)
     ) {
         // Header with animation
         AnimatedVisibility(
@@ -90,7 +90,7 @@ fun ScheduleScreen(
         ScrollableTabRow(
             selectedTabIndex = schedule.indexOfFirst { it.dayOfWeek == selectedDay }.coerceAtLeast(0),
             modifier = Modifier.fillMaxWidth(),
-            containerColor = Color.White,
+            containerColor = SurfaceDark,
             edgePadding = 8.dp
         ) {
             schedule.forEach { day ->
@@ -176,7 +176,7 @@ fun AnimatedLessonCard(lesson: Lesson, index: Int) {
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(12.dp)),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
+            colors = CardDefaults.cardColors(containerColor = CardBackgroundDark),
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
         ) {
             Row(

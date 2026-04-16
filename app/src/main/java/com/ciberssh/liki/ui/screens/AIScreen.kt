@@ -63,7 +63,7 @@ fun AIScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(BackgroundLight)
+            .background(BackgroundDark)
     ) {
         // Header
         Surface(
@@ -157,7 +157,7 @@ fun AIScreen(
                             Card(
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(12.dp)),
-                                colors = CardDefaults.cardColors(containerColor = Color.White)
+                                colors = CardDefaults.cardColors(containerColor = CardBackgroundDark)
                             ) {
                                 Row(
                                     modifier = Modifier.padding(16.dp),
@@ -184,7 +184,7 @@ fun AIScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 8.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White)
+                colors = CardDefaults.cardColors(containerColor = CardBackgroundDark)
             ) {
                 Row(
                     modifier = Modifier

@@ -1,8 +1,15 @@
 package com.ciberssh.liki.ui.screens
 
-import android.view.ViewGroup
+import android.graphics.Bitmap
+import android.graphics.pdf.PdfRenderer
+import android.os.ParcelFileDescriptor
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -10,15 +17,18 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.viewinterop.AndroidView
 import com.ciberssh.liki.data.models.Book
 import com.ciberssh.liki.ui.theme.*
-import com.github.barteksc.pdfviewer.PDFView
-import com.github.barteksc.pdfviewer.scroll.DefaultScrollHandle
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -28,14 +38,46 @@ fun PDFViewerScreen(
     onBack: () -> Unit,
     onExtractText: (Int) -> Unit
 ) {
-    var currentPage by remember { mutableStateOf(0) }
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    var pages by remember { mutableStateOf<List<Bitmap>>(emptyList()) }
     var totalPages by remember { mutableStateOf(0) }
-    var showPageDialog by remember { mutableStateOf(false) }
+    var isLoading by remember { mutableStateOf(true) }
+    val listState = rememberLazyListState()
+
+    LaunchedEffect(book) {
+        scope.launch {
+            isLoading = true
+            val loadedPages = withContext(Dispatchers.IO) {
+                val file = File(book.filePath)
+                if (!file.exists()) return@withContext emptyList()
+
+                val fileDescriptor = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY)
+                val pdfRenderer = PdfRenderer(fileDescriptor)
+                totalPages = pdfRenderer.pageCount
+
+                val bitmaps = mutableListOf<Bitmap>()
+                for (i in 0 until pdfRenderer.pageCount) {
+                    val page = pdfRenderer.openPage(i)
+                    val bitmap = Bitmap.createBitmap(page.width * 2, page.height * 2, Bitmap.Config.ARGB_8888)
+                    page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
+                    bitmaps.add(bitmap)
+                    page.close()
+                }
+
+                pdfRenderer.close()
+                fileDescriptor.close()
+                bitmaps
+            }
+            pages = loadedPages
+            isLoading = false
+        }
+    }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(BackgroundLight)
+            .background(BackgroundDark)
     ) {
         // Header
         Surface(
@@ -67,22 +109,19 @@ fun PDFViewerScreen(
                         color = Color.White,
                         maxLines = 1
                     )
-                    Text(
-                        text = "Страница ${currentPage + 1} из $totalPages",
-                        fontSize = 12.sp,
-                        color = Color.White.copy(alpha = 0.9f)
-                    )
+                    if (totalPages > 0) {
+                        Text(
+                            text = "$totalPages страниц",
+                            fontSize = 12.sp,
+                            color = Color.White.copy(alpha = 0.9f)
+                        )
+                    }
                 }
 
-                IconButton(onClick = { showPageDialog = true }) {
-                    Icon(
-                        imageVector = Icons.Default.Search,
-                        contentDescription = "Перейти к странице",
-                        tint = Color.White
-                    )
-                }
-
-                IconButton(onClick = { onExtractText(currentPage + 1) }) {
+                IconButton(onClick = {
+                    val currentPage = listState.firstVisibleItemIndex + 1
+                    onExtractText(currentPage)
+                }) {
                     Icon(
                         imageVector = Icons.Default.SmartToy,
                         contentDescription = "AI помощь",
@@ -92,92 +131,45 @@ fun PDFViewerScreen(
             }
         }
 
-        // PDF Viewer
-        AndroidView(
-            factory = { context ->
-                PDFView(context, null).apply {
-                    layoutParams = ViewGroup.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.MATCH_PARENT
-                    )
-                }
-            },
-            modifier = Modifier.fillMaxSize(),
-            update = { pdfView ->
-                val file = File(book.filePath)
-                if (file.exists()) {
-                    pdfView.fromFile(file)
-                        .defaultPage(0)
-                        .onPageChange { page, pageCount ->
-                            currentPage = page
-                            totalPages = pageCount
-                        }
-                        .enableSwipe(true)
-                        .swipeHorizontal(false)
-                        .enableDoubletap(true)
-                        .scrollHandle(DefaultScrollHandle(pdfView.context))
-                        .spacing(10)
-                        .load()
-                }
-            }
-        )
-    }
-
-    if (showPageDialog) {
-        GoToPageDialog(
-            currentPage = currentPage + 1,
-            totalPages = totalPages,
-            onDismiss = { showPageDialog = false },
-            onGoToPage = { page ->
-                // TODO: Implement page navigation
-                showPageDialog = false
-            }
-        )
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun GoToPageDialog(
-    currentPage: Int,
-    totalPages: Int,
-    onDismiss: () -> Unit,
-    onGoToPage: (Int) -> Unit
-) {
-    var pageInput by remember { mutableStateOf(currentPage.toString()) }
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("Перейти к странице") },
-        text = {
-            Column {
-                Text("Введите номер страницы (1-$totalPages)")
-                Spacer(modifier = Modifier.height(8.dp))
-                OutlinedTextField(
-                    value = pageInput,
-                    onValueChange = { pageInput = it },
-                    label = { Text("Страница") },
-                    singleLine = true
-                )
-            }
-        },
-        confirmButton = {
-            Button(
-                onClick = {
-                    val page = pageInput.toIntOrNull()
-                    if (page != null && page in 1..totalPages) {
-                        onGoToPage(page)
-                    }
-                },
-                colors = ButtonDefaults.buttonColors(containerColor = PrimaryBlue)
+        // PDF Pages
+        if (isLoading) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
             ) {
-                Text("Перейти")
+                CircularProgressIndicator(color = PrimaryBlue)
             }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Отмена")
+        } else {
+            LazyColumn(
+                state = listState,
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(pages) { bitmap ->
+                    var scale by remember { mutableStateOf(1f) }
+
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .wrapContentHeight(),
+                        colors = CardDefaults.cardColors(containerColor = Color.White)
+                    ) {
+                        Image(
+                            bitmap = bitmap.asImageBitmap(),
+                            contentDescription = null,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .graphicsLayer(scaleX = scale, scaleY = scale)
+                                .pointerInput(Unit) {
+                                    detectTransformGestures { _, _, zoom, _ ->
+                                        scale = (scale * zoom).coerceIn(1f, 3f)
+                                    }
+                                }
+                        )
+                    }
+                }
             }
         }
-    )
+    }
 }
