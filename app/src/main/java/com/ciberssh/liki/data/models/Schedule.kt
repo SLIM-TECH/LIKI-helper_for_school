@@ -10,7 +10,8 @@ data class Lesson(
     val subject: String,
     val startTime: String,
     val endTime: String,
-    val room: String = ""
+    val room: String = "",
+    val teacher: String = ""
 )
 
 data class BellSchedule(

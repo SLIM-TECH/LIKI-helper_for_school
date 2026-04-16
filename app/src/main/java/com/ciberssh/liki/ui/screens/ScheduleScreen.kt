@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -26,15 +27,20 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ciberssh.liki.data.models.Lesson
 import com.ciberssh.liki.ui.theme.*
 import com.ciberssh.liki.ui.viewmodel.ScheduleViewModel
+import com.ciberssh.liki.utils.PreferencesManager
+import androidx.compose.ui.platform.LocalContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScheduleScreen(
     viewModel: ScheduleViewModel = viewModel()
 ) {
+    val context = LocalContext.current
     val schedule by viewModel.schedule.collectAsState()
     val currentDay by viewModel.currentDay.collectAsState()
     var selectedDay by remember { mutableStateOf(currentDay) }
+    val isAdmin by PreferencesManager.isAdmin(context).collectAsState(initial = false)
+    var editingLesson by remember { mutableStateOf<Lesson?>(null) }
 
     LaunchedEffect(currentDay) {
         if (selectedDay.isEmpty()) {
@@ -48,14 +54,14 @@ fun ScheduleScreen(
             .background(
                 Brush.verticalGradient(
                     colors = listOf(
-                        BackgroundDark,
-                        Color(0xFF0D1226)
+                        BackgroundGradientStart,
+                        BackgroundGradientEnd
                     )
                 )
             )
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
-            // Modern header with gradient
+            // Beautiful header
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -64,65 +70,61 @@ fun ScheduleScreen(
                             colors = listOf(PrimaryBlue, AccentPurple)
                         )
                     )
-                    .shadow(8.dp)
+                    .padding(top = 40.dp, bottom = 20.dp, start = 20.dp, end = 20.dp)
             ) {
-                Column(
-                    modifier = Modifier.padding(20.dp)
-                ) {
+                Column {
                     Text(
-                        text = "📅 Расписание",
-                        fontSize = 28.sp,
+                        text = "📚 Расписание",
+                        fontSize = 32.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White
                     )
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "Сегодня: $currentDay",
-                        fontSize = 14.sp,
+                        text = currentDay,
+                        fontSize = 16.sp,
                         color = Color.White.copy(alpha = 0.9f)
                     )
                 }
             }
 
-            // Day selector
+            // Day selector with pills
             ScrollableTabRow(
                 selectedTabIndex = schedule.indexOfFirst { it.dayOfWeek == selectedDay }.coerceAtLeast(0),
                 modifier = Modifier.fillMaxWidth(),
-                containerColor = SurfaceDark,
-                edgePadding = 8.dp
+                containerColor = Color.Transparent,
+                edgePadding = 16.dp,
+                indicator = {},
+                divider = {}
             ) {
                 schedule.forEach { day ->
                     val isSelected = day.dayOfWeek == selectedDay
                     val isToday = day.dayOfWeek == currentDay
 
-                    Tab(
-                        selected = isSelected,
-                        onClick = { selectedDay = day.dayOfWeek },
-                        modifier = Modifier.padding(horizontal = 4.dp)
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(vertical = 12.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Text(
-                                text = day.dayOfWeek,
-                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                color = when {
-                                    isSelected -> PrimaryBlue
-                                    isToday -> AccentOrange
-                                    else -> TextSecondary
+                    Box(
+                        modifier = Modifier
+                            .padding(horizontal = 4.dp, vertical = 12.dp)
+                            .clip(RoundedCornerShape(20.dp))
+                            .background(
+                                if (isSelected) {
+                                    Brush.horizontalGradient(
+                                        colors = listOf(PrimaryBlue, AccentPurple)
+                                    )
+                                } else {
+                                    Brush.horizontalGradient(
+                                        colors = listOf(SurfaceDark, SurfaceDark)
+                                    )
                                 }
                             )
-                            if (isToday && !isSelected) {
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Box(
-                                    modifier = Modifier
-                                        .size(6.dp)
-                                        .clip(RoundedCornerShape(3.dp))
-                                        .background(AccentOrange)
-                                )
-                            }
-                        }
+                            .clickable { selectedDay = day.dayOfWeek }
+                            .padding(horizontal = 20.dp, vertical = 10.dp)
+                    ) {
+                        Text(
+                            text = day.dayOfWeek,
+                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                            color = if (isSelected) Color.White else TextSecondary,
+                            fontSize = 14.sp
+                        )
                     }
                 }
             }
@@ -133,11 +135,18 @@ fun ScheduleScreen(
             if (selectedSchedule != null) {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                    contentPadding = PaddingValues(20.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     itemsIndexed(selectedSchedule.lessons) { index, lesson ->
-                        AnimatedLessonCard(lesson, index)
+                        BeautifulLessonCard(
+                            lesson = lesson,
+                            index = index,
+                            isAdmin = isAdmin,
+                            onClick = if (isAdmin) {
+                                { editingLesson = lesson }
+                            } else null
+                        )
                     }
                 }
             } else {
@@ -148,16 +157,33 @@ fun ScheduleScreen(
                     Text(
                         text = "Нет уроков",
                         color = TextSecondary,
-                        fontSize = 16.sp
+                        fontSize = 18.sp
                     )
                 }
             }
         }
     }
+
+    // Edit dialog for admin
+    if (editingLesson != null && isAdmin) {
+        LessonEditDialog(
+            lesson = editingLesson!!,
+            onDismiss = { editingLesson = null },
+            onSave = { updatedLesson ->
+                // TODO: Save to Supabase
+                editingLesson = null
+            }
+        )
+    }
 }
 
 @Composable
-fun AnimatedLessonCard(lesson: Lesson, index: Int) {
+fun BeautifulLessonCard(
+    lesson: Lesson,
+    index: Int,
+    isAdmin: Boolean,
+    onClick: (() -> Unit)? = null
+) {
     var visible by remember { mutableStateOf(false) }
 
     LaunchedEffect(lesson) {
@@ -173,68 +199,64 @@ fun AnimatedLessonCard(lesson: Lesson, index: Int) {
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .shadow(4.dp, RoundedCornerShape(16.dp)),
+                .shadow(8.dp, RoundedCornerShape(24.dp))
+                .then(
+                    if (onClick != null) Modifier.clickable(onClick = onClick)
+                    else Modifier
+                ),
             colors = CardDefaults.cardColors(
                 containerColor = CardBackgroundDark
             ),
-            shape = RoundedCornerShape(16.dp)
+            shape = RoundedCornerShape(24.dp)
         ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(
-                        Brush.horizontalGradient(
-                            colors = listOf(
-                                CardBackgroundDark,
-                                SurfaceDark
-                            )
-                        )
-                    )
-                    .padding(16.dp),
+                    .padding(20.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Modern lesson number badge
+                // Beautiful number badge
                 Box(
                     modifier = Modifier
-                        .size(56.dp)
-                        .shadow(4.dp, RoundedCornerShape(12.dp))
+                        .size(64.dp)
+                        .shadow(6.dp, CircleShape)
                         .background(
                             Brush.linearGradient(
                                 colors = listOf(PrimaryBlue, AccentPurple)
                             ),
-                            RoundedCornerShape(12.dp)
+                            CircleShape
                         ),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = lesson.number.toString(),
-                        fontSize = 24.sp,
+                        fontSize = 28.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White
                     )
                 }
 
-                Spacer(modifier = Modifier.width(16.dp))
+                Spacer(modifier = Modifier.width(20.dp))
 
                 // Lesson info
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = lesson.subject,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
                         color = TextPrimary
                     )
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(6.dp))
                     Row(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
                             imageVector = Icons.Default.Schedule,
                             contentDescription = null,
-                            modifier = Modifier.size(16.dp),
+                            modifier = Modifier.size(18.dp),
                             tint = TextSecondary
                         )
-                        Spacer(modifier = Modifier.width(4.dp))
+                        Spacer(modifier = Modifier.width(6.dp))
                         Text(
                             text = "${lesson.startTime} - ${lesson.endTime}",
                             fontSize = 14.sp,
@@ -242,7 +264,107 @@ fun AnimatedLessonCard(lesson: Lesson, index: Int) {
                         )
                     }
                 }
+
+                if (isAdmin) {
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = "Редактировать",
+                        tint = AccentPurple,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
             }
         }
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun LessonEditDialog(
+    lesson: Lesson,
+    onDismiss: () -> Unit,
+    onSave: (Lesson) -> Unit
+) {
+    var subject by remember { mutableStateOf(lesson.subject) }
+    var teacher by remember { mutableStateOf(lesson.teacher ?: "") }
+    var room by remember { mutableStateOf(lesson.room ?: "") }
+    var startTime by remember { mutableStateOf(lesson.startTime) }
+    var endTime by remember { mutableStateOf(lesson.endTime) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                "Редактировать урок",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold
+            )
+        },
+        text = {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                OutlinedTextField(
+                    value = subject,
+                    onValueChange = { subject = it },
+                    label = { Text("Предмет") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                OutlinedTextField(
+                    value = teacher,
+                    onValueChange = { teacher = it },
+                    label = { Text("Учитель") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                OutlinedTextField(
+                    value = room,
+                    onValueChange = { room = it },
+                    label = { Text("Кабинет") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    OutlinedTextField(
+                        value = startTime,
+                        onValueChange = { startTime = it },
+                        label = { Text("Начало") },
+                        modifier = Modifier.weight(1f)
+                    )
+                    OutlinedTextField(
+                        value = endTime,
+                        onValueChange = { endTime = it },
+                        label = { Text("Конец") },
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    onSave(
+                        lesson.copy(
+                            subject = subject,
+                            teacher = teacher,
+                            room = room,
+                            startTime = startTime,
+                            endTime = endTime
+                        )
+                    )
+                },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = PrimaryBlue
+                )
+            ) {
+                Text("Сохранить")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Отмена")
+            }
+        }
+    )
 }
