@@ -1,12 +1,12 @@
 package com.ciberssh.liki.ui.screens
 
+import android.content.Context
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -20,6 +20,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -28,7 +30,8 @@ import com.ciberssh.liki.data.models.Lesson
 import com.ciberssh.liki.ui.theme.*
 import com.ciberssh.liki.ui.viewmodel.ScheduleViewModel
 import com.ciberssh.liki.utils.PreferencesManager
-import androidx.compose.ui.platform.LocalContext
+import java.text.SimpleDateFormat
+import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -48,100 +51,58 @@ fun ScheduleScreen(
         }
     }
 
+    // Get current date
+    val dateFormat = SimpleDateFormat("d MMMM yyyy", Locale("ru"))
+    val currentDate = dateFormat.format(Date())
+
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(
                 Brush.verticalGradient(
                     colors = listOf(
-                        BackgroundGradientStart,
-                        BackgroundGradientEnd
+                        Color(0xFF5B4E9D),
+                        Color(0xFF3D2F6B)
                     )
                 )
             )
     ) {
-        Column(modifier = Modifier.fillMaxSize()) {
-            // Beautiful header
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(
-                        Brush.horizontalGradient(
-                            colors = listOf(PrimaryBlue, AccentPurple)
-                        )
-                    )
-                    .padding(top = 40.dp, bottom = 20.dp, start = 20.dp, end = 20.dp)
-            ) {
-                Column {
-                    Text(
-                        text = "📚 Расписание",
-                        fontSize = 32.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = currentDay,
-                        fontSize = 16.sp,
-                        color = Color.White.copy(alpha = 0.9f)
-                    )
-                }
-            }
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(24.dp)
+        ) {
+            // Header - exact copy from screenshot
+            Spacer(modifier = Modifier.height(40.dp))
 
-            // Day selector with pills
-            ScrollableTabRow(
-                selectedTabIndex = schedule.indexOfFirst { it.dayOfWeek == selectedDay }.coerceAtLeast(0),
-                modifier = Modifier.fillMaxWidth(),
-                containerColor = Color.Transparent,
-                edgePadding = 16.dp,
-                indicator = {},
-                divider = {}
-            ) {
-                schedule.forEach { day ->
-                    val isSelected = day.dayOfWeek == selectedDay
-                    val isToday = day.dayOfWeek == currentDay
+            Text(
+                text = "Расписание на сегодня",
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.White
+            )
 
-                    Box(
-                        modifier = Modifier
-                            .padding(horizontal = 4.dp, vertical = 12.dp)
-                            .clip(RoundedCornerShape(20.dp))
-                            .background(
-                                if (isSelected) {
-                                    Brush.horizontalGradient(
-                                        colors = listOf(PrimaryBlue, AccentPurple)
-                                    )
-                                } else {
-                                    Brush.horizontalGradient(
-                                        colors = listOf(SurfaceDark, SurfaceDark)
-                                    )
-                                }
-                            )
-                            .clickable { selectedDay = day.dayOfWeek }
-                            .padding(horizontal = 20.dp, vertical = 10.dp)
-                    ) {
-                        Text(
-                            text = day.dayOfWeek,
-                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                            color = if (isSelected) Color.White else TextSecondary,
-                            fontSize = 14.sp
-                        )
-                    }
-                }
-            }
+            Spacer(modifier = Modifier.height(8.dp))
 
-            // Lessons list
+            Text(
+                text = currentDate,
+                fontSize = 16.sp,
+                color = Color.White.copy(alpha = 0.7f)
+            )
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // Lessons list - exact card style from screenshot
             val selectedSchedule = schedule.find { it.dayOfWeek == selectedDay }
 
             if (selectedSchedule != null) {
                 LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(20.dp),
+                    modifier = Modifier.weight(1f),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     itemsIndexed(selectedSchedule.lessons) { index, lesson ->
-                        BeautifulLessonCard(
+                        LessonCardExact(
                             lesson = lesson,
-                            index = index,
                             isAdmin = isAdmin,
                             onClick = if (isAdmin) {
                                 { editingLesson = lesson }
@@ -149,28 +110,45 @@ fun ScheduleScreen(
                         )
                     }
                 }
-            } else {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Add button - exact style from screenshot
+            if (isAdmin) {
+                Button(
+                    onClick = { /* TODO: Add new lesson */ },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF5B86E5)
+                    ),
+                    shape = RoundedCornerShape(16.dp)
                 ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = null,
+                        tint = Color.White
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "Нет уроков",
-                        color = TextSecondary,
-                        fontSize = 18.sp
+                        text = "Добавить урок",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color.White
                     )
                 }
             }
         }
     }
 
-    // Edit dialog for admin
+    // Edit dialog
     if (editingLesson != null && isAdmin) {
         LessonEditDialog(
             lesson = editingLesson!!,
             onDismiss = { editingLesson = null },
             onSave = { updatedLesson ->
-                // TODO: Save to Supabase
                 editingLesson = null
             }
         )
@@ -178,103 +156,124 @@ fun ScheduleScreen(
 }
 
 @Composable
-fun BeautifulLessonCard(
+fun LessonCardExact(
     lesson: Lesson,
-    index: Int,
     isAdmin: Boolean,
     onClick: (() -> Unit)? = null
 ) {
-    var visible by remember { mutableStateOf(false) }
-
-    LaunchedEffect(lesson) {
-        kotlinx.coroutines.delay(index * 20L)
-        visible = true
-    }
-
-    AnimatedVisibility(
-        visible = visible,
-        enter = fadeIn(animationSpec = tween(150)) +
-                slideInHorizontally(animationSpec = tween(150)) { it / 4 }
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .shadow(4.dp, RoundedCornerShape(20.dp))
+            .then(
+                if (onClick != null) Modifier.clickable(onClick = onClick)
+                else Modifier
+            ),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White
+        ),
+        shape = RoundedCornerShape(20.dp)
     ) {
-        Card(
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .shadow(8.dp, RoundedCornerShape(24.dp))
-                .then(
-                    if (onClick != null) Modifier.clickable(onClick = onClick)
-                    else Modifier
-                ),
-            colors = CardDefaults.cardColors(
-                containerColor = CardBackgroundDark
-            ),
-            shape = RoundedCornerShape(24.dp)
+                .padding(20.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(
+            // Icon circle - exact style from screenshot
+            Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(20.dp),
-                verticalAlignment = Alignment.CenterVertically
+                    .size(48.dp)
+                    .background(
+                        color = getSubjectColor(lesson.subject),
+                        shape = CircleShape
+                    ),
+                contentAlignment = Alignment.Center
             ) {
-                // Beautiful number badge
-                Box(
-                    modifier = Modifier
-                        .size(64.dp)
-                        .shadow(6.dp, CircleShape)
-                        .background(
-                            Brush.linearGradient(
-                                colors = listOf(PrimaryBlue, AccentPurple)
-                            ),
-                            CircleShape
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
+                Icon(
+                    imageVector = getSubjectIcon(lesson.subject),
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.width(16.dp))
+
+            // Subject name
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = lesson.subject,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color(0xFF2D3142)
+                )
+                if (lesson.teacher.isNotEmpty()) {
                     Text(
-                        text = lesson.number.toString(),
-                        fontSize = 28.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
-                }
-
-                Spacer(modifier = Modifier.width(20.dp))
-
-                // Lesson info
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = lesson.subject,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = TextPrimary
-                    )
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Schedule,
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp),
-                            tint = TextSecondary
-                        )
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text(
-                            text = "${lesson.startTime} - ${lesson.endTime}",
-                            fontSize = 14.sp,
-                            color = TextSecondary
-                        )
-                    }
-                }
-
-                if (isAdmin) {
-                    Icon(
-                        imageVector = Icons.Default.Edit,
-                        contentDescription = "Редактировать",
-                        tint = AccentPurple,
-                        modifier = Modifier.size(24.dp)
+                        text = lesson.teacher,
+                        fontSize = 13.sp,
+                        color = Color(0xFF9A9A9A)
                     )
                 }
             }
+
+            // Time - exact style from screenshot
+            Text(
+                text = "${lesson.startTime} - ${lesson.endTime}",
+                fontSize = 13.sp,
+                color = Color(0xFF9A9A9A)
+            )
         }
+    }
+}
+
+fun getSubjectIcon(subject: String): ImageVector {
+    return when {
+        subject.contains("Математика", ignoreCase = true) ||
+        subject.contains("Алгебра", ignoreCase = true) ||
+        subject.contains("Геометрия", ignoreCase = true) -> Icons.Default.Calculate
+        subject.contains("Русский", ignoreCase = true) ||
+        subject.contains("Литература", ignoreCase = true) -> Icons.Default.MenuBook
+        subject.contains("Английский", ignoreCase = true) -> Icons.Default.Language
+        subject.contains("История", ignoreCase = true) ||
+        subject.contains("Обществознание", ignoreCase = true) ||
+        subject.contains("ЧиО", ignoreCase = true) -> Icons.Default.HistoryEdu
+        subject.contains("Физика", ignoreCase = true) -> Icons.Default.Science
+        subject.contains("Химия", ignoreCase = true) -> Icons.Default.Biotech
+        subject.contains("Биология", ignoreCase = true) -> Icons.Default.Eco
+        subject.contains("География", ignoreCase = true) -> Icons.Default.Public
+        subject.contains("Информатика", ignoreCase = true) -> Icons.Default.Computer
+        subject.contains("Физкультура", ignoreCase = true) ||
+        subject.contains("Физ-ра", ignoreCase = true) -> Icons.Default.FitnessCenter
+        subject.contains("Музыка", ignoreCase = true) -> Icons.Default.MusicNote
+        subject.contains("ИЗО", ignoreCase = true) ||
+        subject.contains("Рисование", ignoreCase = true) -> Icons.Default.Palette
+        else -> Icons.Default.School
+    }
+}
+
+fun getSubjectColor(subject: String): Color {
+    return when {
+        subject.contains("Математика", ignoreCase = true) ||
+        subject.contains("Алгебра", ignoreCase = true) ||
+        subject.contains("Геометрия", ignoreCase = true) -> Color(0xFF5B86E5)
+        subject.contains("Русский", ignoreCase = true) ||
+        subject.contains("Литература", ignoreCase = true) -> Color(0xFFFF6B6B)
+        subject.contains("Английский", ignoreCase = true) -> Color(0xFF4ECDC4)
+        subject.contains("История", ignoreCase = true) ||
+        subject.contains("Обществознание", ignoreCase = true) ||
+        subject.contains("ЧиО", ignoreCase = true) -> Color(0xFFFFBE0B)
+        subject.contains("Физика", ignoreCase = true) -> Color(0xFF8B5CF6)
+        subject.contains("Химия", ignoreCase = true) -> Color(0xFF06FFA5)
+        subject.contains("Биология", ignoreCase = true) -> Color(0xFF4ADE80)
+        subject.contains("География", ignoreCase = true) -> Color(0xFF3B82F6)
+        subject.contains("Информатика", ignoreCase = true) -> Color(0xFF6366F1)
+        subject.contains("Физкультура", ignoreCase = true) ||
+        subject.contains("Физ-ра", ignoreCase = true) -> Color(0xFFEF4444)
+        subject.contains("Музыка", ignoreCase = true) -> Color(0xFFEC4899)
+        subject.contains("ИЗО", ignoreCase = true) ||
+        subject.contains("Рисование", ignoreCase = true) -> Color(0xFFF59E0B)
+        else -> Color(0xFF64748B)
     }
 }
 
@@ -286,8 +285,8 @@ fun LessonEditDialog(
     onSave: (Lesson) -> Unit
 ) {
     var subject by remember { mutableStateOf(lesson.subject) }
-    var teacher by remember { mutableStateOf(lesson.teacher ?: "") }
-    var room by remember { mutableStateOf(lesson.room ?: "") }
+    var teacher by remember { mutableStateOf(lesson.teacher) }
+    var room by remember { mutableStateOf(lesson.room) }
     var startTime by remember { mutableStateOf(lesson.startTime) }
     var endTime by remember { mutableStateOf(lesson.endTime) }
 
@@ -355,7 +354,7 @@ fun LessonEditDialog(
                     )
                 },
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = PrimaryBlue
+                    containerColor = Color(0xFF5B86E5)
                 )
             ) {
                 Text("Сохранить")
