@@ -61,8 +61,8 @@ fun BooksScreen(
         // Header
         AnimatedVisibility(
             visible = true,
-            enter = fadeIn(animationSpec = tween(500)) +
-                    slideInVertically(animationSpec = tween(500)) { -it }
+            enter = fadeIn(animationSpec = tween(200)) +
+                    slideInVertically(animationSpec = tween(200)) { -it }
         ) {
             Surface(
                 modifier = Modifier.fillMaxWidth(),
@@ -174,8 +174,8 @@ fun AnimatedBookCard(book: Book, index: Int, onClick: () -> Unit) {
 
     AnimatedVisibility(
         visible = visible,
-        enter = fadeIn(animationSpec = tween(400)) +
-                scaleIn(animationSpec = tween(400), initialScale = 0.8f)
+        enter = fadeIn(animationSpec = tween(150)) +
+                scaleIn(animationSpec = tween(150), initialScale = 0.8f)
     ) {
         Card(
             modifier = Modifier

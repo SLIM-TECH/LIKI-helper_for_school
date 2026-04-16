@@ -19,7 +19,12 @@
       "Bash(sed -i 's/colors = CardDefaults\\\\.cardColors\\(containerColor = Color\\\\.White\\)/colors = CardDefaults.cardColors\\(containerColor = CardBackgroundDark\\)/g' \"$file\")",
       "Bash(done)",
       "Bash(./gradlew assembleDebug)",
-      "Bash(./gradlew assembleDebug --refresh-dependencies)"
+      "Bash(./gradlew assembleDebug --refresh-dependencies)",
+      "Bash(ls -la *.png)",
+      "Bash(grep -n \"tween\\(500\\)\\\\|tween\\(400\\)\" app/src/main/java/com/ciberssh/liki/ui/screens/*.kt)",
+      "Bash(sed -i 's/tween\\(500\\)/tween\\(200\\)/g' \"$file\")",
+      "Bash(sed -i 's/tween\\(400\\)/tween\\(150\\)/g' \"$file\")",
+      "Bash(sed -i 's/tween\\(300\\)/tween\\(150\\)/g' \"$file\")"
     ]
   }
 }

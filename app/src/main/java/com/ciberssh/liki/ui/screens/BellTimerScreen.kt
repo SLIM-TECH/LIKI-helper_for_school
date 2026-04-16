@@ -114,8 +114,8 @@ fun RestCard() {
 
     AnimatedVisibility(
         visible = visible,
-        enter = fadeIn(animationSpec = tween(500)) +
-                slideInVertically(animationSpec = tween(500)) { -it }
+        enter = fadeIn(animationSpec = tween(200)) +
+                slideInVertically(animationSpec = tween(200)) { -it }
     ) {
         Card(
             modifier = Modifier
@@ -176,8 +176,8 @@ fun NoLessonsCard() {
 
     AnimatedVisibility(
         visible = visible,
-        enter = fadeIn(animationSpec = tween(500)) +
-                slideInVertically(animationSpec = tween(500)) { -it }
+        enter = fadeIn(animationSpec = tween(200)) +
+                slideInVertically(animationSpec = tween(200)) { -it }
     ) {
         Card(
             modifier = Modifier
@@ -240,8 +240,8 @@ fun AnimatedTimerCard(timeUntilBell: com.ciberssh.liki.utils.TimeUntilBell) {
 
     AnimatedVisibility(
         visible = visible,
-        enter = fadeIn(animationSpec = tween(500)) +
-                slideInVertically(animationSpec = tween(500)) { -it }
+        enter = fadeIn(animationSpec = tween(200)) +
+                slideInVertically(animationSpec = tween(200)) { -it }
     ) {
         Card(
             modifier = Modifier
@@ -348,7 +348,7 @@ fun AnimatedTimerCard(timeUntilBell: com.ciberssh.liki.utils.TimeUntilBell) {
 
                 val animatedProgress by animateFloatAsState(
                     targetValue = progress,
-                    animationSpec = tween(300),
+                    animationSpec = tween(150),
                     label = "progress"
                 )
 
@@ -410,8 +410,8 @@ fun BellScheduleCard(bell: BellSchedule, isCurrent: Boolean) {
 
     AnimatedVisibility(
         visible = visible,
-        enter = fadeIn(animationSpec = tween(300)) +
-                expandVertically(animationSpec = tween(300))
+        enter = fadeIn(animationSpec = tween(150)) +
+                expandVertically(animationSpec = tween(150))
     ) {
         Card(
             modifier = Modifier

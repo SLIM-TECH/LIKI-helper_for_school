@@ -46,8 +46,8 @@ fun HomeworkScreen(
         // Header with animation
         AnimatedVisibility(
             visible = true,
-            enter = fadeIn(animationSpec = tween(500)) +
-                    slideInVertically(animationSpec = tween(500)) { -it }
+            enter = fadeIn(animationSpec = tween(200)) +
+                    slideInVertically(animationSpec = tween(200)) { -it }
         ) {
             Surface(
                 modifier = Modifier.fillMaxWidth(),
@@ -204,17 +204,16 @@ fun AnimatedHomeworkCard(
     var visible by remember { mutableStateOf(false) }
 
     LaunchedEffect(homework.id) {
-        kotlinx.coroutines.delay(index * 80L)
+        kotlinx.coroutines.delay(index * 20L)
         visible = true
     }
 
     AnimatedVisibility(
         visible = visible,
-        enter = fadeIn(animationSpec = tween(400)) +
-                slideInHorizontally(animationSpec = tween(400)) { it } +
-                expandVertically(animationSpec = tween(400)),
-        exit = fadeOut(animationSpec = tween(300)) +
-                shrinkVertically(animationSpec = tween(300))
+        enter = fadeIn(animationSpec = tween(150)) +
+                slideInHorizontally(animationSpec = tween(150)) { it },
+        exit = fadeOut(animationSpec = tween(150)) +
+                shrinkVertically(animationSpec = tween(150))
     ) {
         Card(
             modifier = Modifier

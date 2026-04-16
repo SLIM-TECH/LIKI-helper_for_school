@@ -16,6 +16,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -40,118 +42,115 @@ fun ScheduleScreen(
         }
     }
 
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(BackgroundDark)
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(
+                        BackgroundDark,
+                        Color(0xFF0D1226)
+                    )
+                )
+            )
     ) {
-        // Header with animation
-        AnimatedVisibility(
-            visible = true,
-            enter = fadeIn(animationSpec = tween(500)) +
-                    slideInVertically(animationSpec = tween(500)) { -it }
-        ) {
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                color = PrimaryBlue,
-                shadowElevation = 4.dp
+        Column(modifier = Modifier.fillMaxSize()) {
+            // Modern header with gradient
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        Brush.horizontalGradient(
+                            colors = listOf(PrimaryBlue, AccentPurple)
+                        )
+                    )
+                    .shadow(8.dp)
             ) {
                 Column(
-                    modifier = Modifier.padding(16.dp)
+                    modifier = Modifier.padding(20.dp)
                 ) {
                     Text(
-                        text = "Расписание",
-                        fontSize = 24.sp,
+                        text = "📅 Расписание",
+                        fontSize = 28.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White
                     )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Today,
-                            contentDescription = null,
-                            tint = Color.White,
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            text = "Сегодня: $currentDay",
-                            fontSize = 14.sp,
-                            color = Color.White.copy(alpha = 0.9f)
-                        )
-                    }
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "Сегодня: $currentDay",
+                        fontSize = 14.sp,
+                        color = Color.White.copy(alpha = 0.9f)
+                    )
                 }
             }
-        }
 
-        // Day selector with animation
-        ScrollableTabRow(
-            selectedTabIndex = schedule.indexOfFirst { it.dayOfWeek == selectedDay }.coerceAtLeast(0),
-            modifier = Modifier.fillMaxWidth(),
-            containerColor = SurfaceDark,
-            edgePadding = 8.dp
-        ) {
-            schedule.forEach { day ->
-                val isSelected = day.dayOfWeek == selectedDay
-                val isToday = day.dayOfWeek == currentDay
+            // Day selector
+            ScrollableTabRow(
+                selectedTabIndex = schedule.indexOfFirst { it.dayOfWeek == selectedDay }.coerceAtLeast(0),
+                modifier = Modifier.fillMaxWidth(),
+                containerColor = SurfaceDark,
+                edgePadding = 8.dp
+            ) {
+                schedule.forEach { day ->
+                    val isSelected = day.dayOfWeek == selectedDay
+                    val isToday = day.dayOfWeek == currentDay
 
-                Tab(
-                    selected = isSelected,
-                    onClick = { selectedDay = day.dayOfWeek },
-                    modifier = Modifier.padding(horizontal = 4.dp)
-                ) {
-                    Column(
-                        modifier = Modifier.padding(vertical = 12.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
+                    Tab(
+                        selected = isSelected,
+                        onClick = { selectedDay = day.dayOfWeek },
+                        modifier = Modifier.padding(horizontal = 4.dp)
                     ) {
-                        Text(
-                            text = day.dayOfWeek,
-                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                            color = when {
-                                isSelected -> PrimaryBlue
-                                isToday -> AccentOrange
-                                else -> TextSecondary
-                            }
-                        )
-                        if (isToday && !isSelected) {
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Box(
-                                modifier = Modifier
-                                    .size(6.dp)
-                                    .clip(RoundedCornerShape(3.dp))
-                                    .background(AccentOrange)
+                        Column(
+                            modifier = Modifier.padding(vertical = 12.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = day.dayOfWeek,
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                color = when {
+                                    isSelected -> PrimaryBlue
+                                    isToday -> AccentOrange
+                                    else -> TextSecondary
+                                }
                             )
+                            if (isToday && !isSelected) {
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Box(
+                                    modifier = Modifier
+                                        .size(6.dp)
+                                        .clip(RoundedCornerShape(3.dp))
+                                        .background(AccentOrange)
+                                )
+                            }
                         }
                     }
                 }
             }
-        }
 
-        // Lessons list with staggered animation
-        val selectedSchedule = schedule.find { it.dayOfWeek == selectedDay }
+            // Lessons list
+            val selectedSchedule = schedule.find { it.dayOfWeek == selectedDay }
 
-        if (selectedSchedule != null) {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                itemsIndexed(selectedSchedule.lessons) { index, lesson ->
-                    AnimatedLessonCard(lesson, index)
+            if (selectedSchedule != null) {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    itemsIndexed(selectedSchedule.lessons) { index, lesson ->
+                        AnimatedLessonCard(lesson, index)
+                    }
                 }
-            }
-        } else {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "Нет уроков",
-                    color = TextSecondary,
-                    fontSize = 16.sp
-                )
+            } else {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "Нет уроков",
+                        color = TextSecondary,
+                        fontSize = 16.sp
+                    )
+                }
             }
         }
     }
@@ -162,42 +161,56 @@ fun AnimatedLessonCard(lesson: Lesson, index: Int) {
     var visible by remember { mutableStateOf(false) }
 
     LaunchedEffect(lesson) {
-        kotlinx.coroutines.delay(index * 80L)
+        kotlinx.coroutines.delay(index * 20L)
         visible = true
     }
 
     AnimatedVisibility(
         visible = visible,
-        enter = fadeIn(animationSpec = tween(400)) +
-                slideInHorizontally(animationSpec = tween(400)) { it / 2 } +
-                expandVertically(animationSpec = tween(400))
+        enter = fadeIn(animationSpec = tween(150)) +
+                slideInHorizontally(animationSpec = tween(150)) { it / 4 }
     ) {
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(12.dp)),
-            colors = CardDefaults.cardColors(containerColor = CardBackgroundDark),
-            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                .shadow(4.dp, RoundedCornerShape(16.dp)),
+            colors = CardDefaults.cardColors(
+                containerColor = CardBackgroundDark
+            ),
+            shape = RoundedCornerShape(16.dp)
         ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .background(
+                        Brush.horizontalGradient(
+                            colors = listOf(
+                                CardBackgroundDark,
+                                SurfaceDark
+                            )
+                        )
+                    )
                     .padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Lesson number with animation
+                // Modern lesson number badge
                 Box(
                     modifier = Modifier
-                        .size(48.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(PrimaryBlue.copy(alpha = 0.1f)),
+                        .size(56.dp)
+                        .shadow(4.dp, RoundedCornerShape(12.dp))
+                        .background(
+                            Brush.linearGradient(
+                                colors = listOf(PrimaryBlue, AccentPurple)
+                            ),
+                            RoundedCornerShape(12.dp)
+                        ),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = lesson.number.toString(),
-                        fontSize = 20.sp,
+                        fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
-                        color = PrimaryBlue
+                        color = Color.White
                     )
                 }
 

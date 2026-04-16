@@ -2,12 +2,17 @@ package com.ciberssh.liki.ui.screens
 
 import android.content.Intent
 import android.net.Uri
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -52,10 +57,12 @@ fun MainScreen() {
     }
 
     Scaffold(
+        containerColor = BackgroundDark,
         bottomBar = {
             NavigationBar(
                 containerColor = SurfaceDark,
-                tonalElevation = 8.dp
+                tonalElevation = 0.dp,
+                modifier = Modifier.shadow(8.dp)
             ) {
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute = navBackStackEntry?.destination?.route
@@ -156,13 +163,27 @@ fun MainScreen() {
             if (currentRoute != Screen.AI.route) {
                 FloatingActionButton(
                     onClick = { navController.navigate(Screen.AI.route) },
-                    containerColor = AccentOrange
+                    containerColor = Color.Transparent,
+                    modifier = Modifier.shadow(8.dp, shape = androidx.compose.foundation.shape.CircleShape)
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.SmartToy,
-                        contentDescription = "AI Помощник",
-                        tint = Color.White
-                    )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(
+                                Brush.linearGradient(
+                                    colors = listOf(AccentOrange, Color(0xFFFF8C42))
+                                ),
+                                shape = androidx.compose.foundation.shape.CircleShape
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.SmartToy,
+                            contentDescription = "AI Помощник",
+                            tint = Color.White,
+                            modifier = Modifier.size(28.dp)
+                        )
+                    }
                 }
             }
         }
