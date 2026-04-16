@@ -95,7 +95,7 @@ fun SettingsScreen(
                     } else {
                         SettingsItem(
                             icon = Icons.Default.Login,
-                            title = "Войти как администратор",
+                            title = "Войти как Умар",
                             subtitle = "Для публикации ДЗ",
                             onClick = { showLoginDialog = true }
                         )
