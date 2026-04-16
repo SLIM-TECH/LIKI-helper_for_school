@@ -140,6 +140,24 @@ fun MainScreen() {
                 )
 
                 NavigationBarItem(
+                    icon = { Icon(Icons.Default.SmartToy, contentDescription = null) },
+                    label = { Text("AI") },
+                    selected = currentRoute == Screen.AI.route,
+                    onClick = {
+                        navController.navigate(Screen.AI.route) {
+                            popUpTo(navController.graph.startDestinationId) { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    },
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = AccentOrange,
+                        selectedTextColor = AccentOrange,
+                        indicatorColor = AccentOrange.copy(alpha = 0.1f)
+                    )
+                )
+
+                NavigationBarItem(
                     icon = { Icon(Icons.Default.Settings, contentDescription = null) },
                     label = { Text("Еще") },
                     selected = currentRoute == Screen.Settings.route,
@@ -156,35 +174,6 @@ fun MainScreen() {
                         indicatorColor = PrimaryBlue.copy(alpha = 0.1f)
                     )
                 )
-            }
-        },
-        floatingActionButton = {
-            val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
-            if (currentRoute != Screen.AI.route) {
-                FloatingActionButton(
-                    onClick = { navController.navigate(Screen.AI.route) },
-                    containerColor = Color.Transparent,
-                    modifier = Modifier.shadow(8.dp, shape = androidx.compose.foundation.shape.CircleShape)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(
-                                Brush.linearGradient(
-                                    colors = listOf(AccentOrange, Color(0xFFFF8C42))
-                                ),
-                                shape = androidx.compose.foundation.shape.CircleShape
-                            ),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.SmartToy,
-                            contentDescription = "AI Помощник",
-                            tint = Color.White,
-                            modifier = Modifier.size(28.dp)
-                        )
-                    }
-                }
             }
         }
     ) { paddingValues ->
